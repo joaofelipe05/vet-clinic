@@ -67,25 +67,38 @@ export default function Layout() {
 
         {/* Usuário + Sair */}
         <div className="px-3 py-4 border-t border-gray-100">
-          <div className="flex items-center gap-3 px-3 py-2 mb-1">
-            <div className="w-8 h-8 rounded-full bg-esmeralda-100 flex items-center justify-center">
-              <span className="text-esmeralda-700 text-xs font-semibold">
-                {user.nome?.charAt(0) ?? 'V'}
-              </span>
-            </div>
-            <div className="overflow-hidden">
-             <div className="text-sm font-medium text-gray-800 truncate">{user.nome ? `Dra. ${user.nome}` : 'Veterinária'}</div>
-              {user.crmv && <div className="text-xs text-gray-400">CRMV {user.crmv}</div>}
-            </div>
-          </div>
-          <button
-            onClick={sair}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-150"
-          >
-            <LogOut size={16} />
-            Sair
-          </button>
+  <div className="flex items-center justify-between">
+    
+    <div className="flex items-center gap-3">
+      <div className="w-8 h-8 rounded-full bg-esmeralda-100 flex items-center justify-center">
+        <span className="text-esmeralda-700 text-xs font-semibold">
+          {user.nome?.charAt(0) ?? 'V'}
+        </span>
+      </div>
+
+      <div>
+        <div className="text-sm font-medium text-gray-800">
+          {user.nome ? `Dra. ${user.nome}` : 'Veterinária'}
         </div>
+
+        {user.crmv && (
+          <div className="text-xs text-gray-400">
+            CRMV {user.crmv}
+          </div>
+        )}
+      </div>
+    </div>
+
+    <button
+      onClick={sair}
+      className="flex items-center gap-1 text-sm text-gray-400 hover:text-red-500 transition-colors"
+    >
+      <LogOut size={14} />
+      Sair
+    </button>
+
+  </div>
+</div>
       </aside>
 
       {/* Conteúdo principal */}

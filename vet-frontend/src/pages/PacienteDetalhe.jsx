@@ -8,6 +8,7 @@ import { ptBR } from 'date-fns/locale'
 import toast from 'react-hot-toast'
 import ModalNovaConsulta from '../components/ui/ModalNovaConsulta.jsx'
 import ModalNovaVacina from '../components/ui/ModalNovaVacina.jsx'
+import ModalEditarPaciente from '../components/ui/ModalEditarPaciente.jsx'
 
 const ESPECIE_EMOJI = { CACHORRO:'🐕', GATO:'🐈', AVE:'🦜', REPTIL:'🦎', ROEDOR:'🐭', COELHO:'🐰', OUTRO:'🐾' }
 const STATUS_COR = {
@@ -35,6 +36,7 @@ export default function PacienteDetalhe() {
   const [aba, setAba] = useState('historico')
   const [modalConsulta, setModalConsulta] = useState(false)
   const [modalVacina, setModalVacina] = useState(false)
+  const [modalEditarAberto, setModalEditarAberto] = useState(false)
 
   async function carregar() {
     try {
@@ -78,7 +80,9 @@ export default function PacienteDetalhe() {
                   {animal.castrado ? ' · castrado(a)' : ''}
                 </p>
               </div>
-              <button className="btn-ghost"><Edit2 size={14} /> Editar</button>
+             <button className="btn-ghost"onClick={() => setModalEditarAberto(true)}>
+              <Edit2 size={14} /> Editar
+            </button>
             </div>
 
             {/* Dados rápidos */}
@@ -278,6 +282,16 @@ export default function PacienteDetalhe() {
           onSalvo={() => { setModalVacina(false); carregar() }}
         />
       )}
+      {modalEditarAberto && (
+        <ModalEditarPaciente
+          animal={animal}
+          onClose={() => setModalEditarAberto(false)}
+          onSalvo={() => {
+            setModalEditarAberto(false)
+            carregar()
+          }}
+        />
+    )}
     </div>
   )
 }
