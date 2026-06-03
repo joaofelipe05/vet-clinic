@@ -1,0 +1,92 @@
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Playfair+Display:wght@500;600&display=swap');
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root {
+  --esmeralda: #1f9b74;
+  --esmeralda-dark: #137d5e;
+  --esmeralda-light: #edfaf4;
+  --creme: #f8f5ed;
+  --text: #1a1a1a;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --sidebar-w: 240px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--creme);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar fina e elegante */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* Inputs e textareas com estilo consistente */
+.input-base {
+  @apply w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-white
+         text-sm font-sans text-gray-800 placeholder-gray-400
+         focus:outline-none focus:ring-2 focus:ring-esmeralda-300 focus:border-esmeralda-400
+         transition-all duration-150;
+}
+
+textarea.input-base {
+  @apply resize-none leading-relaxed;
+}
+
+/* Botões */
+.btn-primary {
+  @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-xl
+         bg-esmeralda-600 hover:bg-esmeralda-700 text-white text-sm font-medium
+         transition-all duration-150 shadow-sm hover:shadow-md active:scale-95;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-xl
+         bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium
+         border border-gray-200 transition-all duration-150 active:scale-95;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center gap-2 px-3 py-2 rounded-lg
+         text-gray-500 hover:text-gray-700 hover:bg-gray-100
+         text-sm font-medium transition-all duration-150;
+}
+
+.btn-danger {
+  @apply inline-flex items-center gap-2 px-4 py-2.5 rounded-xl
+         bg-red-50 hover:bg-red-100 text-red-600 text-sm font-medium
+         border border-red-200 transition-all duration-150 active:scale-95;
+}
+
+/* Card padrão */
+.card {
+  @apply bg-white rounded-2xl shadow-card border border-gray-100/60 p-5;
+}
+
+/* Badge de status */
+.badge {
+  @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+/* Label de campo */
+.field-label {
+  @apply block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5;
+}
+
+/* Print styles */
+@media print {
+  body { background: white; }
+  .no-print { display: none !important; }
+}

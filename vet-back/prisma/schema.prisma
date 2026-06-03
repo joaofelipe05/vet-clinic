@@ -1,0 +1,214 @@
+// ============================================================
+// SCHEMA - SISTEMA CLÍNICA VETERINÁRIA
+// ORM: Prisma | Banco: PostgreSQL
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// USUÁRIO (login da veterinária)
+// ============================================================
+model Usuario {
+  id         String   @id @default(uuid())
+  nome       String
+  email      String   @unique
+  senha      String   // hash bcrypt
+  crmv       String?  // registro profissional
+  assinatura String?  // caminho para imagem da assinatura (impressão)
+  criadoEm   DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  consultas  Consulta[]
+
+  @@map("usuarios")
+}
+
+// ============================================================
+// TUTOR (dono do animal)
+// ============================================================
+model Tutor {
+  id        String   @id @default(uuid())
+  nome      String
+  cpf       String?  @unique
+  telefone  String
+  email     String?
+  endereco  String?
+  cidade    String?
+  criadoEm  DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  animais   Animal[]
+
+  @@map("tutores")
+}
+
+// ============================================================
+// ANIMAL (paciente)
+// ============================================================
+model Animal {
+  id            String       @id @default(uuid())
+  nome          String
+  especie       Especie      @default(OUTRO)
+  raca          String?
+  sexo          Sexo
+  cor           String?
+  dataNascimento DateTime?
+  peso          Float?       // em kg
+  microchip     String?      @unique
+  castrado      Boolean      @default(false)
+  alergias      String?      // texto livre
+  observacoes   String?
+  ativo         Boolean      @default(true)
+  criadoEm      DateTime     @default(now())
+  atualizadoEm  DateTime     @updatedAt
+
+  tutorId       String
+  tutor         Tutor        @relation(fields: [tutorId], references: [id])
+
+  consultas     Consulta[]
+  vacinas       Vacina[]
+
+  @@map("animais")
+}
+
+enum Especie {
+  CACHORRO
+  GATO
+  AVE
+  REPTIL
+  ROEDOR
+  COELHO
+  OUTRO
+}
+
+enum Sexo {
+  MACHO
+  FEMEA
+}
+
+// ============================================================
+// CONSULTA / AGENDAMENTO
+// ============================================================
+model Consulta {
+  id          String         @id @default(uuid())
+  dataHora    DateTime
+  tipo        TipoConsulta   @default(CONSULTA)
+  status      StatusConsulta @default(AGENDADA)
+  motivoVisita String?       // queixa principal
+  valor       Float?
+  formaPagamento FormaPagamento?
+  pago        Boolean        @default(false)
+  observacoes String?
+  criadoEm    DateTime       @default(now())
+  atualizadoEm DateTime      @updatedAt
+
+  animalId    String
+  animal      Animal         @relation(fields: [animalId], references: [id])
+
+  veterinarioId String
+  veterinario   Usuario      @relation(fields: [veterinarioId], references: [id])
+
+  prontuario  Prontuario?
+
+  @@map("consultas")
+}
+
+enum TipoConsulta {
+  CONSULTA
+  RETORNO
+  CIRURGIA
+  EMERGENCIA
+  VACINA
+  EXAME
+  BANHO_TOSA
+}
+
+enum StatusConsulta {
+  AGENDADA
+  EM_ATENDIMENTO
+  CONCLUIDA
+  CANCELADA
+  NAO_COMPARECEU
+}
+
+enum FormaPagamento {
+  DINHEIRO
+  CARTAO_DEBITO
+  CARTAO_CREDITO
+  PIX
+  BOLETO
+}
+
+// ============================================================
+// PRONTUÁRIO (coração do sistema — o que a vet digita)
+// ============================================================
+model Prontuario {
+  id              String   @id @default(uuid())
+  // --- Anamnese ---
+  anamnese        String?  // relato do tutor / histórico
+
+  // --- Exame clínico ---
+  temperatura     Float?   // °C
+  frequenciaCardiaca Int?  // bpm
+  frequenciaRespiratoria Int? // rpm
+  pesoConsulta    Float?   // peso registrado na consulta (kg)
+  mucosas         String?
+  hidratacao      String?
+  linfonodos      String?
+  ausculta        String?
+  exameAbdome     String?
+  exameOrtopedico String?
+  outrosAchados   String?
+
+  // --- Diagnóstico ---
+  diagnostico     String?
+  diagnosticoSuspeito String? // hipótese diagnóstica
+
+  // --- Exames solicitados ---
+  examesSolicitados String? // texto livre: "Hemograma, Urinálise..."
+  resultadosExames  String? // texto livre para colar resultados
+
+  // --- Receita / Prescrição ---
+  prescricao      String?  // texto livre da receita completa
+
+  // --- Tratamento ---
+  tratamento      String?  // procedimentos realizados na consulta
+  retorno         String?  // orientação de retorno: "em 7 dias"
+
+  // --- Orientações ao tutor ---
+  orientacoes     String?
+
+  criadoEm        DateTime @default(now())
+  atualizadoEm    DateTime @updatedAt
+
+  consultaId      String   @unique
+  consulta        Consulta @relation(fields: [consultaId], references: [id])
+
+  @@map("prontuarios")
+}
+
+// ============================================================
+// VACINAS
+// ============================================================
+model Vacina {
+  id            String   @id @default(uuid())
+  nome          String   // ex: "V10", "Antirrábica"
+  dataAplicacao DateTime
+  proximaDose   DateTime?
+  lote          String?
+  fabricante    String?
+  observacoes   String?
+  criadoEm      DateTime @default(now())
+
+  animalId      String
+  animal        Animal   @relation(fields: [animalId], references: [id])
+
+  @@map("vacinas")
+}
