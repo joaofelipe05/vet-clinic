@@ -1,5 +1,5 @@
 // src/lib/api.js
-const BASE = '/api'
+const BASE = 'https://vet-clinic-production-1c6f.up.railway.app'
 
 function getToken() {
   return localStorage.getItem('vet_token')
