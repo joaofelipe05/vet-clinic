@@ -17,9 +17,8 @@
     "bcryptjs": "^2.4.3",
     "fastify": "^4.28.1",
     "pdfmake": "^0.2.23",
-    "zod": "^3.23.8"
-  },
-  "devDependencies": {
+    "zod": "^3.23.8",
     "prisma": "^5.22.0"
-  }
+  },
+  "devDependencies": {}
 }
