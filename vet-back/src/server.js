@@ -16,46 +16,42 @@ import { documentosRoutes } from './routes/documentos.js'
 
 const app = Fastify({ logger: true })
 
-async function start() {
-  // CORS
-  await app.register(cors, {
+// 🔥 CORS PRIMEIRO
+await app.register(cors, {
   origin: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 })
 
-  // JWT
-  await app.register(jwt, {
-    secret: process.env.JWT_SECRET ?? 'dev-secret-troque-em-producao',
-  })
+// JWT
+await app.register(jwt, {
+  secret: process.env.JWT_SECRET ?? 'dev-secret-troque-em-producao',
+})
 
-  // auth decorator
-  app.decorate('authenticate', async (request, reply) => {
-    try {
-      await request.jwtVerify()
-    } catch {
-      reply.status(401).send({ error: 'Token inválido ou expirado.' })
-    }
-  })
+// decorator
+app.decorate('authenticate', async (request, reply) => {
+  try {
+    await request.jwtVerify()
+  } catch {
+    reply.status(401).send({ error: 'Token inválido ou expirado.' })
+  }
+})
 
-  // rotas
-  app.register(authRoutes, { prefix: '/auth' })
-  app.register(tutoresRoutes, { prefix: '/tutores' })
-  app.register(animaisRoutes, { prefix: '/animais' })
-  app.register(consultasRoutes, { prefix: '/consultas' })
-  app.register(prontuariosRoutes, { prefix: '/prontuarios' })
-  app.register(vacinasRoutes, { prefix: '/vacinas' })
-  app.register(dashboardRoutes, { prefix: '/dashboard' })
-  app.register(pdfRoutes, { prefix: '/pdf' })
-  app.register(relatoriosRoutes, { prefix: '/relatorios' })
-  app.register(estoqueRoutes, { prefix: '/estoque' })
-  app.register(documentosRoutes, { prefix: '/documentos' })
+// rotas
+app.register(authRoutes, { prefix: '/auth' })
+app.register(tutoresRoutes, { prefix: '/tutores' })
+app.register(animaisRoutes, { prefix: '/animais' })
+app.register(consultasRoutes, { prefix: '/consultas' })
+app.register(prontuariosRoutes, { prefix: '/prontuarios' })
+app.register(vacinasRoutes, { prefix: '/vacinas' })
+app.register(dashboardRoutes, { prefix: '/dashboard' })
+app.register(pdfRoutes, { prefix: '/pdf' })
+app.register(relatoriosRoutes, { prefix: '/relatorios' })
+app.register(estoqueRoutes, { prefix: '/estoque' })
+app.register(documentosRoutes, { prefix: '/documentos' })
 
-  app.get('/health', () => ({ status: 'ok' }))
+app.get('/health', () => ({ status: 'ok' }))
 
-  const PORT = process.env.PORT || 3333
+const PORT = process.env.PORT || 3333
 
-  await app.listen({ port: PORT, host: '0.0.0.0' })
-}
-
-start()
+app.listen({ port: PORT, host: '0.0.0.0' })
