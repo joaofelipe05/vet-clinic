@@ -17,7 +17,7 @@ import { documentosRoutes } from './routes/documentos.js'
 
 const app = Fastify({ logger: true })
 
-// ── Plugins ────────────────────────────────────────────────
+// 🔥 PRIMEIRO: CORS
 await app.register(cors, {
   origin: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -25,14 +25,14 @@ await app.register(cors, {
   credentials: true,
 })
 
+// 🔥 SEGUNDO: JWT
 await app.register(jwt, {
   secret: process.env.JWT_SECRET ?? 'dev-secret-troque-em-producao',
 })
 
-app.options('*', (req, reply) => {
-  reply.send()
-})
-
+// 🔥 TERCEIRO: rotas
+app.register(authRoutes, { prefix: '/auth' })
+app.register(dashboardRoutes, { prefix: '/dashboard' })
 
 // ── Decorator de autenticação (reutilizado nas rotas) ──────
 app.decorate('authenticate', async (request, reply) => {
