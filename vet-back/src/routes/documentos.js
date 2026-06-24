@@ -215,10 +215,11 @@ export async function documentosRoutes(app) {
     try {
       const printer = new PdfPrinter(fonts)
       const pdfDoc = printer.createPdfKitDocument(docDefinition)
-      reply.header('Content-Type', 'application/pdf')
-      reply.header('Content-Disposition', `inline; filename="recibo-${animal.nome.toLowerCase()}-${consulta.id.substring(0,8)}.pdf"`)
+      reply.raw.setHeader('Content-Type', 'application/pdf')
+      reply.raw.setHeader('Content-Disposition', `inline; filename="recibo-${animal.nome.toLowerCase()}-${consulta.id.substring(0,8)}.pdf"`)
       pdfDoc.pipe(reply.raw)
       pdfDoc.end()
+      return reply.hijack()
     } catch (err) {
       app.log.error(err)
       return reply.status(500).send({ error: 'Erro ao gerar recibo.' })
@@ -348,10 +349,11 @@ export async function documentosRoutes(app) {
     try {
       const printer = new PdfPrinter(fonts)
       const pdfDoc = printer.createPdfKitDocument(docDefinition)
-      reply.header('Content-Type', 'application/pdf')
-      reply.header('Content-Disposition', `inline; filename="nfse-modelo-${consulta.id.substring(0,8)}.pdf"`)
+      reply.raw.setHeader('Content-Type', 'application/pdf')
+      reply.raw.setHeader('Content-Disposition', `inline; filename="nfse-modelo-${consulta.id.substring(0,8)}.pdf"`)
       pdfDoc.pipe(reply.raw)
       pdfDoc.end()
+      return reply.hijack()
     } catch (err) {
       return reply.status(500).send({ error: 'Erro ao gerar modelo NFS-e.' })
     }

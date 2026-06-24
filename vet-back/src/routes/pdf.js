@@ -92,8 +92,7 @@ export async function pdfRoutes(app) {
       pageSize: 'A4',
       pageMargins: [40, 60, 40, 60],
 
-      defaultStyle: { font: 'Roboto' 
-  },
+      defaultStyle: { font: 'Roboto' },
 
       header: {
         columns: [
@@ -236,8 +235,7 @@ export async function pdfRoutes(app) {
         rodape:           { fontSize: 8, color: '#aaa' },
       },
 
-     defaultStyle: { font: 'Roboto' 
-},
+      defaultStyle: { font: 'Roboto' },
     }
 
     try {
@@ -286,8 +284,7 @@ export async function pdfRoutes(app) {
     const docDefinition = {
       pageSize: 'A5',
       pageMargins: [40, 50, 40, 50],
-      defaultStyle: { font: 'Roboto' 
-  },
+      defaultStyle: { font: 'Roboto' },
       content: [
         { text: 'CLÍNICA VETERINÁRIA', style: 'cabecalho', alignment: 'center' },
         { text: vet.crmv ? `CRMV: ${vet.crmv}` : '', style: 'subcabecalho', alignment: 'center' },
