@@ -18,11 +18,14 @@ const app = Fastify({ logger: true })
 
 // 🔥 CORS PRIMEIRO
 await app.register(cors, {
-  origin: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  origin: [
+    'https://vet-clinic-i3q2.vercel.app',
+    /vercel\.app$/
+  ],
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 })
-
 // JWT
 await app.register(jwt, {
   secret: process.env.JWT_SECRET ?? 'dev-secret-troque-em-producao',
