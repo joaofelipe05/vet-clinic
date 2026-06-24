@@ -1,3 +1,7 @@
+
+import Fastify from 'fastify'
+import cors from '@fastify/cors'
+import jwt from '@fastify/jwt'
 const app = Fastify({ logger: true })
 
 // 1. CORS
@@ -35,5 +39,3 @@ app.register(relatoriosRoutes, { prefix: '/relatorios' })
 app.register(estoqueRoutes, { prefix: '/estoque' })
 app.register(documentosRoutes, { prefix: '/documentos' })
 
-// 5. HEALTH
-app.get('/health', () => ({ status: 'ok' }))
