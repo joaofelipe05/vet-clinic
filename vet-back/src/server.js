@@ -12,6 +12,8 @@ import { vacinasRoutes } from './routes/vacinas.js'
 import { dashboardRoutes } from './routes/dashboard.js'
 import { pdfRoutes } from './routes/pdf.js'
 import { relatoriosRoutes } from './routes/relatorios.js'
+import { estoqueRoutes }    from './routes/estoque.js'
+import { documentosRoutes } from './routes/documentos.js'
 
 const app = Fastify({ logger: true })
 
@@ -44,6 +46,8 @@ app.register(vacinasRoutes,    { prefix: '/vacinas' })
 app.register(dashboardRoutes,  { prefix: '/dashboard' })
 app.register(pdfRoutes,        { prefix: '/pdf' })
 app.register(relatoriosRoutes, { prefix: '/relatorios' })
+app.register(estoqueRoutes,    { prefix: '/estoque' })
+app.register(documentosRoutes, { prefix: '/documentos' })
 
 // ── Health check ───────────────────────────────────────────
 app.get('/health', () => ({ status: 'ok', sistema: 'Clínica Veterinária' }))

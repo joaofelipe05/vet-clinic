@@ -2,9 +2,11 @@
 import { PrismaClient } from '@prisma/client'
 import { z } from 'zod'
 
+
 const prisma = new PrismaClient()
 
 const consultaSchema = z.object({
+  
   animalId:      z.string().uuid(),
   dataHora:      z.string(), // ISO datetime
   tipo:          z.enum(['CONSULTA','RETORNO','CIRURGIA','EMERGENCIA','VACINA','EXAME','BANHO_TOSA']).default('CONSULTA'),
