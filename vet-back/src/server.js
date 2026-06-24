@@ -2,6 +2,19 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import jwt from '@fastify/jwt'
+
+
+import { authRoutes } from './routes/auth.js'
+import { tutoresRoutes } from './routes/tutores.js'
+import { animaisRoutes } from './routes/animais.js'
+import { consultasRoutes } from './routes/consultas.js'
+import { prontuariosRoutes } from './routes/prontuarios.js'
+import { vacinasRoutes } from './routes/vacinas.js'
+import { dashboardRoutes } from './routes/dashboard.js'
+import { pdfRoutes } from './routes/pdf.js'
+import { relatoriosRoutes } from './routes/relatorios.js'
+import { estoqueRoutes } from './routes/estoque.js'
+import { documentosRoutes } from './routes/documentos.js'
 const app = Fastify({ logger: true })
 
 // 1. CORS
