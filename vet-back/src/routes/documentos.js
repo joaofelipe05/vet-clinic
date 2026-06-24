@@ -7,11 +7,12 @@ const prisma = new PrismaClient()
 
 const fonts = {
   Roboto: {
-    normal:      'node_modules/pdfmake/build/vfs_fonts.js',
-    bold:        'node_modules/pdfmake/build/vfs_fonts.js',
-    italics:     'node_modules/pdfmake/build/vfs_fonts.js',
-    bolditalics: 'node_modules/pdfmake/build/vfs_fonts.js',
+    normal: 'Helvetica',
+    bold: 'Helvetica-Bold',
+    italics: 'Helvetica-Oblique',
+    bolditalics: 'Helvetica-BoldOblique',
   },
+
 }
 
 function fmt(data) {

@@ -1,16 +1,17 @@
 // src/routes/pdf.js
+
 import { PrismaClient } from '@prisma/client'
 import PdfPrinter from 'pdfmake'
 
 const prisma = new PrismaClient()
 
 const fonts = {
-  Helvetica: {
+  Roboto: {
     normal: 'Helvetica',
     bold: 'Helvetica-Bold',
     italics: 'Helvetica-Oblique',
     bolditalics: 'Helvetica-BoldOblique',
-  },
+  }
 }
 
 function formatarData(data) {
@@ -91,8 +92,7 @@ export async function pdfRoutes(app) {
       pageSize: 'A4',
       pageMargins: [40, 60, 40, 60],
 
-      defaultStyle: {
-    font: 'Helvetica'
+      defaultStyle: { font: 'Roboto' 
   },
 
       header: {
@@ -236,7 +236,7 @@ export async function pdfRoutes(app) {
         rodape:           { fontSize: 8, color: '#aaa' },
       },
 
-     defaultStyle: {font: 'Helvetica', fontSize: 10,
+     defaultStyle: { font: 'Roboto' 
 },
     }
 
@@ -286,8 +286,7 @@ export async function pdfRoutes(app) {
     const docDefinition = {
       pageSize: 'A5',
       pageMargins: [40, 50, 40, 50],
-      defaultStyle: {
-    font: 'Helvetica'
+      defaultStyle: { font: 'Roboto' 
   },
       content: [
         { text: 'CLÍNICA VETERINÁRIA', style: 'cabecalho', alignment: 'center' },
