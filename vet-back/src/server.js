@@ -19,8 +19,12 @@ const app = Fastify({ logger: true })
 
 // ── Plugins ────────────────────────────────────────────────
 await app.register(cors, {
-  // Na rede local, permite qualquer origem da clínica
-  origin: true,
+  origin: [
+    'http://localhost:5173',
+    'https://vet-clinic-i3q2.vercel.app'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 })
 
 await app.register(jwt, {
