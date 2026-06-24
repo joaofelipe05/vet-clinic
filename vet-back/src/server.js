@@ -19,13 +19,10 @@ const app = Fastify({ logger: true })
 async function start() {
   // CORS
   await app.register(cors, {
-    origin: [
-      'https://vet-clinic-i3q2.vercel.app',
-      'http://localhost:5173'
-    ],
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  })
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+})
 
   // JWT
   await app.register(jwt, {
