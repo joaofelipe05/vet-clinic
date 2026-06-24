@@ -10,6 +10,7 @@ import Prontuario from './pages/Prontuario.jsx'
 import Tutores from './pages/Tutores.jsx'
 import Financeiro from './pages/Financeiro.jsx'
 import Relatorios from './pages/Relatorios.jsx'
+import Estoque from './pages/Estoque.jsx'
 
 function RotaPrivada({ children }) {
   const token = localStorage.getItem('vet_token')
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="tutores"     element={<Tutores />} />
         <Route path="financeiro"  element={<Financeiro />} />
         <Route path="relatorios" element={<Relatorios />} />
+        <Route path="estoque" element={<Estoque />} />
       </Route>
     </Routes>
   )

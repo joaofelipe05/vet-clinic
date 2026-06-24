@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import {
   Save, Printer, FileText, ChevronLeft, CheckCircle,
   Thermometer, Heart, Wind, Weight, User, Paperclip,
-  X, Eye, Upload
+  X, Eye, Upload, Package, Plus, Trash2, Receipt, FileCheck
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -31,6 +31,197 @@ function fileToBase64(file) {
   })
 }
 
+function ItensConsulta({ consultaId, prontuarioId }) {
+  const [itens, setItens] = useState([])
+  const [todoEstoque, setTodoEstoque] = useState([])
+  const [buscaItem, setBuscaItem] = useState('')
+  const [itemSelecionado, setItemSelecionado] = useState('')
+  const [quantidade, setQuantidade] = useState(1)
+  const [adicionando, setAdicionando] = useState(false)
+  const [confirmando, setConfirmando] = useState(false)
+  const [aberto, setAberto] = useState(false)
+
+  async function carregarItens() {
+    try {
+      const res = await api.get(`/estoque/consulta/${consultaId}`)
+      setItens(Array.isArray(res) ? res : [])
+    } catch {}
+  }
+
+  async function carregarEstoque() {
+    try {
+      const res = await api.get('/estoque?limite=200')
+      setTodoEstoque(Array.isArray(res) ? res : [])
+    } catch {}
+  }
+
+  useEffect(() => {
+    carregarItens()
+    carregarEstoque()
+  }, [consultaId])
+
+  const estoqueFiltrado = todoEstoque.filter(i =>
+    i.nome.toLowerCase().includes(buscaItem.toLowerCase())
+  )
+
+  async function adicionar() {
+    if (!itemSelecionado) { toast.error('Selecione um item'); return }
+    setAdicionando(true)
+    try {
+      await api.post(`/estoque/consulta/${consultaId}/adicionar`, {
+        itemId: itemSelecionado,
+        quantidade: Number(quantidade),
+      })
+      toast.success('Item adicionado!')
+      setItemSelecionado('')
+      setBuscaItem('')
+      setQuantidade(1)
+      carregarItens()
+    } catch (err) {
+      toast.error(err.message)
+    } finally {
+      setAdicionando(false)
+    }
+  }
+
+  async function remover(itemConsultaId) {
+    try {
+      await api.delete(`/estoque/consulta/item/${itemConsultaId}`)
+      carregarItens()
+    } catch (err) {
+      toast.error(err.message)
+    }
+  }
+
+  async function confirmar() {
+    setConfirmando(true)
+    try {
+      await api.patch(`/estoque/consulta/${consultaId}/confirmar`)
+      toast.success('Itens confirmados — estoque atualizado!')
+      carregarItens()
+    } catch (err) {
+      toast.error(err.message)
+    } finally {
+      setConfirmando(false)
+    }
+  }
+
+  const naoConfirmados = itens.filter(i => !i.confirmado)
+  const confirmados    = itens.filter(i =>  i.confirmado)
+  const total = itens.reduce((s, i) => s + (i.precoUnitario ?? 0) * i.quantidade, 0)
+
+  return (
+    <div className="card mb-4">
+      <button
+        onClick={() => setAberto(v => !v)}
+        className="w-full flex items-center justify-between text-sm font-semibold text-gray-700"
+      >
+        <span className="flex items-center gap-2">
+          <Package size={15} className="text-esmeralda-600" />
+          Itens e materiais usados
+          {itens.length > 0 && (
+            <span className="badge bg-esmeralda-50 text-esmeralda-700 text-[10px]">
+              {itens.length} item(ns)
+            </span>
+          )}
+          {naoConfirmados.length > 0 && (
+            <span className="badge bg-amber-50 text-amber-700 text-[10px]">
+              {naoConfirmados.length} pendente(s)
+            </span>
+          )}
+        </span>
+        <span className="text-xs text-gray-400">{aberto ? '▲' : '▼'}</span>
+      </button>
+
+      {aberto && (
+        <div className="mt-4 space-y-4">
+          {/* Busca e adição */}
+          <div className="flex gap-2">
+            <div className="flex-1 relative">
+              <input
+                className="input-base pr-3"
+                placeholder="Buscar medicamento, vacina, material..."
+                value={buscaItem}
+                onChange={e => { setBuscaItem(e.target.value); setItemSelecionado('') }}
+                list="estoque-list"
+              />
+              <datalist id="estoque-list">
+                {estoqueFiltrado.slice(0, 10).map(i => (
+                  <option key={i.id} value={i.nome} />
+                ))}
+              </datalist>
+            </div>
+            <select
+              className="input-base w-24"
+              value={itemSelecionado}
+              onChange={e => setItemSelecionado(e.target.value)}
+            >
+              <option value="">— item —</option>
+              {estoqueFiltrado.slice(0, 20).map(i => (
+                <option key={i.id} value={i.id}>
+                  {i.nome} ({i.quantidade} {i.unidade})
+                </option>
+              ))}
+            </select>
+            <input
+              type="number" step="0.1" min="0.1"
+              className="input-base w-20"
+              placeholder="Qtd"
+              value={quantidade}
+              onChange={e => setQuantidade(e.target.value)}
+            />
+            <button onClick={adicionar} disabled={adicionando} className="btn-primary px-3">
+              <Plus size={16} />
+            </button>
+          </div>
+
+          {/* Lista de itens */}
+          {itens.length > 0 && (
+            <div className="divide-y divide-gray-50">
+              {itens.map(ic => (
+                <div key={ic.id} className="flex items-center gap-3 py-2.5">
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-gray-800">{ic.item?.nome}</div>
+                    <div className="text-xs text-gray-400">
+                      {ic.quantidade} {ic.item?.unidade}
+                      {ic.precoUnitario ? ` · R$ ${Number(ic.precoUnitario).toFixed(2)} cada` : ''}
+                    </div>
+                  </div>
+                  <div className="text-sm font-medium text-gray-700">
+                    {ic.precoUnitario ? `R$ ${(ic.precoUnitario * ic.quantidade).toFixed(2)}` : '—'}
+                  </div>
+                  {ic.confirmado ? (
+                    <span className="badge bg-esmeralda-50 text-esmeralda-700 text-[10px]">deduzido ✓</span>
+                  ) : (
+                    <>
+                      <span className="badge bg-amber-50 text-amber-700 text-[10px]">pendente</span>
+                      <button onClick={() => remover(ic.id)} className="btn-ghost p-1 text-red-400">
+                        <Trash2 size={13} />
+                      </button>
+                    </>
+                  )}
+                </div>
+              ))}
+
+              {/* Total e botão confirmar */}
+              <div className="pt-3 flex items-center justify-between">
+                <div className="text-sm text-gray-600">
+                  Total em materiais: <span className="font-semibold text-gray-900">R$ {total.toFixed(2)}</span>
+                </div>
+                {naoConfirmados.length > 0 && (
+                  <button onClick={confirmar} disabled={confirmando} className="btn-primary text-xs">
+                    <CheckCircle size={13} />
+                    {confirmando ? 'Confirmando...' : `Confirmar e deduzir do estoque (${naoConfirmados.length})`}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 export default function Prontuario() {
   const { consultaId } = useParams()
   const navigate = useNavigate()
@@ -178,6 +369,10 @@ export default function Prontuario() {
     if (!prontuarioId) { toast.error('Salve o prontuário primeiro!'); return }
     const token = localStorage.getItem('vet_token')
     window.open(`/api/pdf/${tipo}/${prontuarioId}?token=${token}`, '_blank')
+  }
+  function abrirDocumento(tipo) {
+    const token = localStorage.getItem('vet_token')
+    window.open(`/api/documentos/${tipo}/${consultaId}?token=${token}`, '_blank')
   }
 
   function formatarTamanho(bytes) {
@@ -373,6 +568,12 @@ export default function Prontuario() {
         </div>
       </div>
 
+           {/* Itens usados na consulta */}
+      <ItensConsulta
+        consultaId={consultaId}
+        prontuarioId={prontuarioId}
+      />
+
       {/* Botões de ação */}
       <div className="card no-print">
         <div className="flex flex-wrap items-center gap-3">
@@ -380,13 +581,26 @@ export default function Prontuario() {
             <Save size={16} />
             {salvando ? 'Salvando...' : 'Salvar prontuário'}
           </button>
+
           <button onClick={() => abrirPDF('prontuario')} className="btn-secondary">
             <Printer size={16} /> Imprimir prontuário
           </button>
+
           <button onClick={() => abrirPDF('receita')} className="btn-secondary">
             <FileText size={16} /> Imprimir receita
           </button>
+
+          {/* NOVOS BOTÕES */}
+          <button onClick={() => abrirDocumento('recibo')} className="btn-secondary">
+            <Receipt size={16} /> Recibo não fiscal
+          </button>
+
+          <button onClick={() => abrirDocumento('nfse-modelo')} className="btn-secondary">
+            <FileCheck size={16} /> Modelo NFS-e
+          </button>
+
           <div className="flex-1" />
+
           <button onClick={finalizar} className="btn-primary bg-esmeralda-700 hover:bg-esmeralda-800">
             <CheckCircle size={16} /> Finalizar consulta
           </button>

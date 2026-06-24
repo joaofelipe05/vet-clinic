@@ -1,8 +1,6 @@
 // src/components/layout/Layout.jsx
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import {
-  LayoutDashboard, CalendarDays, PawPrint,
-  Users, DollarSign, LogOut, Stethoscope, ClipboardList, BarChart2
+import { LayoutDashboard, CalendarDays, PawPrint, Users, DollarSign, LogOut, Stethoscope, ClipboardList, BarChart2, Package 
 } from 'lucide-react'
 
 const nav = [
@@ -12,6 +10,7 @@ const nav = [
   { to: '/tutores',   icon: Users,           label: 'Tutores' },
   { to: '/financeiro',icon: DollarSign,      label: 'Financeiro' },
   { to: '/relatorios', icon: BarChart2, label: 'Relatórios' },
+  { to: '/estoque', icon: Package, label: 'Estoque' },
 ]
 
 export default function Layout() {
