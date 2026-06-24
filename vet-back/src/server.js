@@ -25,11 +25,17 @@ await app.register(cors, {
   ],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 })
 
 await app.register(jwt, {
   secret: process.env.JWT_SECRET ?? 'dev-secret-troque-em-producao',
 })
+
+app.options('*', (req, reply) => {
+  reply.send()
+})
+
 
 // ── Decorator de autenticação (reutilizado nas rotas) ──────
 app.decorate('authenticate', async (request, reply) => {
