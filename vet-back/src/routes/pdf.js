@@ -242,6 +242,7 @@ export async function pdfRoutes(app) {
   const printer = new PdfPrinter(fonts)
   const pdfDoc = printer.createPdfKitDocument(docDefinition)
 
+  reply.raw.setHeader('Access-Control-Allow-Origin', '*')
   reply.raw.setHeader('Content-Type', 'application/pdf')
   reply.raw.setHeader(
     'Content-Disposition',
@@ -320,6 +321,7 @@ export async function pdfRoutes(app) {
   const printer = new PdfPrinter(fonts)
   const pdfDoc = printer.createPdfKitDocument(docDefinition)
 
+  reply.raw.setHeader('Access-Control-Allow-Origin', '*')
   reply.raw.setHeader('Content-Type', 'application/pdf')
   reply.raw.setHeader(
     'Content-Disposition',
@@ -336,4 +338,4 @@ export async function pdfRoutes(app) {
   return reply.status(500).send({ error: 'Erro ao gerar receita.' })
 }
   })
-}
+} 
