@@ -1,7 +1,7 @@
 // src/pages/Prontuario.jsx
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { api } from '../lib/api.js'
+import { api, abrirPDF as abrirPDFLib } from '../lib/api.js'
 import toast from 'react-hot-toast'
 import {
   Save, Printer, FileText, ChevronLeft, CheckCircle,
@@ -21,7 +21,6 @@ const SECOES_BASICAS = [
   { id: 'retorno',             label: 'Retorno',                 placeholder: 'Ex: Retornar em 7 dias ou se piorar', linhas: 1 },
 ]
 
-// Converte arquivo para base64
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -31,7 +30,7 @@ function fileToBase64(file) {
   })
 }
 
-function ItensConsulta({ consultaId, prontuarioId }) {
+function ItensConsulta({ consultaId }) {
   const [itens, setItens] = useState([])
   const [todoEstoque, setTodoEstoque] = useState([])
   const [buscaItem, setBuscaItem] = useState('')
@@ -107,7 +106,6 @@ function ItensConsulta({ consultaId, prontuarioId }) {
   }
 
   const naoConfirmados = itens.filter(i => !i.confirmado)
-  const confirmados    = itens.filter(i =>  i.confirmado)
   const total = itens.reduce((s, i) => s + (i.precoUnitario ?? 0) * i.quantidade, 0)
 
   return (
@@ -135,7 +133,6 @@ function ItensConsulta({ consultaId, prontuarioId }) {
 
       {aberto && (
         <div className="mt-4 space-y-4">
-          {/* Busca e adição */}
           <div className="flex gap-2">
             <div className="flex-1 relative">
               <input
@@ -152,11 +149,11 @@ function ItensConsulta({ consultaId, prontuarioId }) {
               </datalist>
             </div>
             <select
-              className="input-base w-24"
+              className="input-base w-48"
               value={itemSelecionado}
               onChange={e => setItemSelecionado(e.target.value)}
             >
-              <option value="">— item —</option>
+              <option value="">— selecione —</option>
               {estoqueFiltrado.slice(0, 20).map(i => (
                 <option key={i.id} value={i.id}>
                   {i.nome} ({i.quantidade} {i.unidade})
@@ -175,7 +172,6 @@ function ItensConsulta({ consultaId, prontuarioId }) {
             </button>
           </div>
 
-          {/* Lista de itens */}
           {itens.length > 0 && (
             <div className="divide-y divide-gray-50">
               {itens.map(ic => (
@@ -203,7 +199,6 @@ function ItensConsulta({ consultaId, prontuarioId }) {
                 </div>
               ))}
 
-              {/* Total e botão confirmar */}
               <div className="pt-3 flex items-center justify-between">
                 <div className="text-sm text-gray-600">
                   Total em materiais: <span className="font-semibold text-gray-900">R$ {total.toFixed(2)}</span>
@@ -211,7 +206,7 @@ function ItensConsulta({ consultaId, prontuarioId }) {
                 {naoConfirmados.length > 0 && (
                   <button onClick={confirmar} disabled={confirmando} className="btn-primary text-xs">
                     <CheckCircle size={13} />
-                    {confirmando ? 'Confirmando...' : `Confirmar e deduzir do estoque (${naoConfirmados.length})`}
+                    {confirmando ? 'Confirmando...' : `Confirmar e deduzir (${naoConfirmados.length})`}
                   </button>
                 )}
               </div>
@@ -222,6 +217,7 @@ function ItensConsulta({ consultaId, prontuarioId }) {
     </div>
   )
 }
+
 export default function Prontuario() {
   const { consultaId } = useParams()
   const navigate = useNavigate()
@@ -233,10 +229,9 @@ export default function Prontuario() {
   const [salvando, setSalvando] = useState(false)
   const [salvoEm, setSalvoEm] = useState(null)
 
-  // Estado dos exames
   const [examesSolicitados, setExamesSolicitados] = useState('')
   const [resultadosTexto, setResultadosTexto] = useState('')
-  const [arquivosExame, setArquivosExame] = useState([]) // [{ nome, base64, tipo, tamanho }]
+  const [arquivosExame, setArquivosExame] = useState([])
   const inputFileRef = useRef(null)
 
   useEffect(() => {
@@ -252,13 +247,12 @@ export default function Prontuario() {
           const { temperatura, frequenciaCardiaca, frequenciaRespiratoria, pesoConsulta,
                   examesSolicitados: es, resultadosExames: re, ...resto } = p
           setVitais({
-            temperatura: temperatura ?? '',
-            frequenciaCardiaca: frequenciaCardiaca ?? '',
-            frequenciaRespiratoria: frequenciaRespiratoria ?? '',
-            pesoConsulta: pesoConsulta ?? '',
+            temperatura:           temperatura           ?? '',
+            frequenciaCardiaca:    frequenciaCardiaca    ?? '',
+            frequenciaRespiratoria:frequenciaRespiratoria ?? '',
+            pesoConsulta:          pesoConsulta          ?? '',
           })
           setExamesSolicitados(es ?? '')
-          // resultadosExames pode ter JSON com texto + arquivos salvo
           try {
             const parsed = JSON.parse(re ?? '{}')
             setResultadosTexto(parsed.texto ?? re ?? '')
@@ -277,7 +271,6 @@ export default function Prontuario() {
     carregar()
   }, [consultaId])
 
-  // Auto-save a cada 30s
   useEffect(() => {
     const timer = setInterval(() => salvar(true), 30000)
     return () => clearInterval(timer)
@@ -292,7 +285,6 @@ export default function Prontuario() {
           Object.entries(vitais).map(([k, v]) => [k, v === '' ? null : Number(v)])
         ),
         examesSolicitados: examesSolicitados || null,
-        // Salva texto + arquivos como JSON na coluna resultadosExames
         resultadosExames: JSON.stringify({
           texto: resultadosTexto,
           arquivos: arquivosExame,
@@ -329,7 +321,6 @@ export default function Prontuario() {
   async function handleArquivos(e) {
     const files = Array.from(e.target.files)
     if (!files.length) return
-
     const MAX_MB = 5
     for (const f of files) {
       if (f.size > MAX_MB * 1024 * 1024) {
@@ -338,17 +329,11 @@ export default function Prontuario() {
       }
       try {
         const base64 = await fileToBase64(f)
-        setArquivosExame(prev => [...prev, {
-          nome: f.name,
-          tipo: f.type,
-          tamanho: f.size,
-          base64,
-        }])
+        setArquivosExame(prev => [...prev, { nome: f.name, tipo: f.type, tamanho: f.size, base64 }])
       } catch {
         toast.error(`Erro ao carregar ${f.name}`)
       }
     }
-    // Limpa o input para permitir re-upload do mesmo arquivo
     e.target.value = ''
   }
 
@@ -365,14 +350,22 @@ export default function Prontuario() {
     }
   }
 
-  function abrirPDF(tipo) {
+  // ── CORRIGIDO: usa abrirPDFLib do api.js em vez de window.open ──
+  async function abrirPDF(tipo) {
     if (!prontuarioId) { toast.error('Salve o prontuário primeiro!'); return }
-    const token = localStorage.getItem('vet_token')
-    window.open(`/api/pdf/${tipo}/${prontuarioId}?token=${token}`, '_blank')
+    try {
+      await abrirPDFLib(`/pdf/${tipo}/${prontuarioId}`)
+    } catch (err) {
+      toast.error(err.message)
+    }
   }
-  function abrirDocumento(tipo) {
-    const token = localStorage.getItem('vet_token')
-    window.open(`/api/documentos/${tipo}/${consultaId}?token=${token}`, '_blank')
+
+  async function abrirDocumento(tipo) {
+    try {
+      await abrirPDFLib(`/documentos/${tipo}/${consultaId}`)
+    } catch (err) {
+      toast.error(err.message)
+    }
   }
 
   function formatarTamanho(bytes) {
@@ -439,10 +432,10 @@ export default function Prontuario() {
         </h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { id: 'temperatura',            label: 'Temperatura',  icon: Thermometer, sufixo: '°C',  placeholder: '38.5' },
-            { id: 'frequenciaCardiaca',     label: 'Freq. Cardíaca', icon: Heart,     sufixo: 'bpm', placeholder: '80' },
-            { id: 'frequenciaRespiratoria', label: 'Freq. Resp.',  icon: Wind,        sufixo: 'rpm', placeholder: '20' },
-            { id: 'pesoConsulta',           label: 'Peso',         icon: Weight,      sufixo: 'kg',  placeholder: '10.5' },
+            { id: 'temperatura',            label: 'Temperatura',    icon: Thermometer, sufixo: '°C',  placeholder: '38.5' },
+            { id: 'frequenciaCardiaca',     label: 'Freq. Cardíaca', icon: Heart,       sufixo: 'bpm', placeholder: '80'   },
+            { id: 'frequenciaRespiratoria', label: 'Freq. Resp.',    icon: Wind,        sufixo: 'rpm', placeholder: '20'   },
+            { id: 'pesoConsulta',           label: 'Peso',           icon: Weight,      sufixo: 'kg',  placeholder: '10.5' },
           ].map(({ id, label, icon: Icon, sufixo, placeholder }) => (
             <div key={id}>
               <label className="field-label flex items-center gap-1">
@@ -479,13 +472,12 @@ export default function Prontuario() {
         ))}
       </div>
 
-      {/* ─── SEÇÃO DE EXAMES — melhorada ─── */}
+      {/* Exames */}
       <div className="card mb-4 space-y-4">
         <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
           🔬 Exames
         </h2>
 
-        {/* Exames solicitados */}
         <div>
           <label className="field-label">Exames solicitados</label>
           <textarea
@@ -497,7 +489,6 @@ export default function Prontuario() {
           />
         </div>
 
-        {/* Resultados — texto livre */}
         <div>
           <label className="field-label">Resultados — anotações / laudo em texto</label>
           <textarea
@@ -509,13 +500,10 @@ export default function Prontuario() {
           />
         </div>
 
-        {/* Upload de arquivos */}
         <div>
           <label className="field-label flex items-center gap-1">
             <Paperclip size={11} /> Anexar exames (PDF, imagem)
           </label>
-
-          {/* Área de drop / botão */}
           <div
             onClick={() => inputFileRef.current?.click()}
             className="border-2 border-dashed border-gray-200 rounded-xl p-5 text-center cursor-pointer hover:border-esmeralda-300 hover:bg-esmeralda-50/30 transition-all"
@@ -532,8 +520,6 @@ export default function Prontuario() {
             className="hidden"
             onChange={handleArquivos}
           />
-
-          {/* Lista de arquivos anexados */}
           {arquivosExame.length > 0 && (
             <div className="mt-3 space-y-2">
               {arquivosExame.map((arq, i) => (
@@ -546,18 +532,10 @@ export default function Prontuario() {
                     <div className="text-xs text-gray-400">{formatarTamanho(arq.tamanho)}</div>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <button
-                      onClick={() => abrirArquivo(arq)}
-                      className="btn-ghost p-1.5 text-esmeralda-600 hover:bg-esmeralda-50"
-                      title="Visualizar"
-                    >
+                    <button onClick={() => abrirArquivo(arq)} className="btn-ghost p-1.5 text-esmeralda-600 hover:bg-esmeralda-50" title="Visualizar">
                       <Eye size={14} />
                     </button>
-                    <button
-                      onClick={() => removerArquivo(i)}
-                      className="btn-ghost p-1.5 text-red-400 hover:bg-red-50"
-                      title="Remover"
-                    >
+                    <button onClick={() => removerArquivo(i)} className="btn-ghost p-1.5 text-red-400 hover:bg-red-50" title="Remover">
                       <X size={14} />
                     </button>
                   </div>
@@ -568,11 +546,8 @@ export default function Prontuario() {
         </div>
       </div>
 
-           {/* Itens usados na consulta */}
-      <ItensConsulta
-        consultaId={consultaId}
-        prontuarioId={prontuarioId}
-      />
+      {/* Itens usados na consulta */}
+      <ItensConsulta consultaId={consultaId} />
 
       {/* Botões de ação */}
       <div className="card no-print">
@@ -581,26 +556,19 @@ export default function Prontuario() {
             <Save size={16} />
             {salvando ? 'Salvando...' : 'Salvar prontuário'}
           </button>
-
           <button onClick={() => abrirPDF('prontuario')} className="btn-secondary">
             <Printer size={16} /> Imprimir prontuário
           </button>
-
           <button onClick={() => abrirPDF('receita')} className="btn-secondary">
             <FileText size={16} /> Imprimir receita
           </button>
-
-          {/* NOVOS BOTÕES */}
           <button onClick={() => abrirDocumento('recibo')} className="btn-secondary">
             <Receipt size={16} /> Recibo não fiscal
           </button>
-
           <button onClick={() => abrirDocumento('nfse-modelo')} className="btn-secondary">
             <FileCheck size={16} /> Modelo NFS-e
           </button>
-
           <div className="flex-1" />
-
           <button onClick={finalizar} className="btn-primary bg-esmeralda-700 hover:bg-esmeralda-800">
             <CheckCircle size={16} /> Finalizar consulta
           </button>
